@@ -1,0 +1,92 @@
+**manifest**
+
+  <uses-permission android:name="android.permission.READ_CONTACTS"/>
+  
+**activity_main**
+  
+  <?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    tools:context=".MainActivity">
+
+
+    <Button
+        android:layout_width="200dp"
+        android:layout_marginTop="20dp"
+        android:layout_height="wrap_content"
+        android:text="GET CONTACT"
+        android:id="@+id/select"/>
+
+
+</LinearLayout>
+
+
+**mainactivity**
+
+package com.example.contentproviders;
+
+
+import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.ContactsContract;
+import android.os.Bundle;
+
+import android.widget.Button;
+
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+
+
+public class MainActivity extends AppCompatActivity {
+    Button btn;
+    private static final int MY_CODE=1;
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        btn=findViewById(R.id.select);
+
+        btn.setOnClickListener(v->{
+            Intent intent=new Intent(Intent.ACTION_PICK,ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
+            startActivityForResult(intent,MY_CODE);
+        });
+
+
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestcode,int resultcode,Intent data){
+        super.onActivityResult(requestcode,resultcode,data);
+        if(resultcode==RESULT_OK){
+            if(requestcode==MY_CODE){
+                getContact(data);
+            }
+        }
+    }
+    protected  void getContact(Intent data){
+        Cursor cursor=null;
+        try{
+            Uri uri=data.getData();
+            cursor=getContentResolver().query(uri,null,null,null,null);
+            cursor.moveToFirst();
+            int phoneIndex=cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+            String phoneData=cursor.getString(phoneIndex);
+            Toast.makeText(MainActivity.this, phoneData, Toast.LENGTH_SHORT).show();
+        }
+        catch(Exception e){
+            Toast.makeText(MainActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+        }
+    }
+}
+

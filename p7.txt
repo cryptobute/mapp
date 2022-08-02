@@ -1,0 +1,112 @@
+**activity_main.xml**
+
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity"
+    android:padding="15dp"
+    android:orientation="vertical"
+
+
+    >
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fetch"
+        android:layout_marginTop="10dp"
+        android:id="@+id/fetchBtn"
+        />
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/fetchedView"
+
+        android:layout_marginTop="50dp"
+
+        />
+
+
+  </LinearLayout>
+
+
+**Mainactivity**
+
+package com.example.fetchdata;
+
+import androidx.appcompat.app.AppCompatActivity;
+import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
+import android.widget.Button;
+import android.widget.TextView;
+
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+public class MainActivity extends AppCompatActivity {
+    TextView fetchView;
+    RequestQueue reqQueue;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        Button fetchBtn=findViewById(R.id.fetchBtn);
+        fetchView=findViewById(R.id.fetchedView);
+        fetchView.setMovementMethod(new ScrollingMovementMethod());
+        reqQueue= Volley.newRequestQueue(this);
+        fetchBtn.setOnClickListener(v->{
+            getParsedData();
+        });
+    }
+    protected void getParsedData(){
+        String url="https://raw.githubusercontent.com/brai0/android7/main/contacts.json";
+        JsonObjectRequest request=new JsonObjectRequest(Request.Method.GET, url, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            JSONArray jsonArray=response.getJSONArray("contacts");
+                            for (int i=0;i<jsonArray.length();i++){
+                                JSONObject user=jsonArray.getJSONObject(i);
+                                String name=user.getString("name");
+                                String email=user.getString("email");
+                                fetchView.append("name: "+name+"\n"+"email: "+email+"\n\n");
+                            }
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                    error.fillInStackTrace();
+            }
+        });
+        reqQueue.add(request);
+
+    }
+}
+
+
+**androidmanifest**
+ <uses-permission android:name="android.permission.INTERNET"/>
+
+**gradle_script**
+    implementation 'com.android.volley:volley:1.2.0'
+
+
